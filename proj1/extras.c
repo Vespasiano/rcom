@@ -3,6 +3,7 @@
 #include <string.h>
 
 int send_packet(int fd, int A, int C){
+    printf("sending packet\n");
     char buf[5];
     int bytes;
     buf[0] = FLAG;
@@ -12,7 +13,7 @@ int send_packet(int fd, int A, int C){
     buf[4] = FLAG;
 
     bytes = write(fd, buf, 5);
-    // printf("%d bytes written\n", bytes);
+    printf("%d bytes written\n", bytes);
     return bytes;
 }
 

@@ -12,6 +12,7 @@
 #include <stdlib.h>>
 #include <string.h>
 
+
 #define BAUDRATE B38400
 
 struct termios oldtio, newtio;
@@ -32,6 +33,9 @@ state_machine state_Machine;
 static int rejs;
 static int rrs;
 
+extern int cFlag;
+extern int tries;
+
 char retrieveBcc(char * buffer, int data_bytes, int bytes) {
     char bcc = buffer[bytes];
     int i = bytes + 1;
@@ -48,12 +52,12 @@ int llopen(int porta, int status) {
   // sprintf(port, "/dev/ttyS%i", porta);
   // printf("port %s\n", port);
   
-  if (status) {
+  if (status == 0) {
     fd = open("/dev/ttyS10", O_RDWR | O_NOCTTY);
   }
-  else { fd = open("/dev/ttyS11", O_RDWR | O_NOCTTY); }
-  
-  printf("Established connection. \n");
+  else {
+    fd = open("/dev/ttyS11", O_RDWR | O_NOCTTY); 
+  }
 
   // fd = open(port, O_RDWR | O_NOCTTY);
   if (fd < 0) {
@@ -92,7 +96,8 @@ int llopen(int porta, int status) {
     return(-1);
   }
 
-  if (status) { //TRANSMITTER
+
+  if (status == 0) { //TRANSMITTER
     do
     {
       send_set(fd);
@@ -100,6 +105,7 @@ int llopen(int porta, int status) {
       cFlag = 0;
       receive_ua(fd);
       cancelAlarm();  
+      printf("cflag is %i and tries is %i\n", cFlag, tries);
     } while (cFlag && tries <= MAX_TRIES);
     if (tries >= MAX_TRIES) return -1;
     else tries = 1; 
@@ -108,8 +114,17 @@ int llopen(int porta, int status) {
 
   }
   else { //RECEIVER
-    receive_set(fd);
-    send_ua(fd);
+    do
+    {
+      receive_set(fd);
+      setAlarm(TIMEOUT);
+      cFlag = 0;
+      send_ua(fd);
+      cancelAlarm();  
+    } while (cFlag && tries <= MAX_TRIES);
+    if (tries >= MAX_TRIES) return -1;
+    else tries = 1; 
+    cancelAlarm();
   }
 
   printf("New termios structure set\n");
@@ -438,35 +453,15 @@ int llwrite(int fd, char* buffer, int length) {
   info.addr = TRANSMITTER_A;
   char stuffed[STUFFED_MAX_SIZE];
 
-  do {
-    int index = data_bytes;
-    int stuffed_index = 0;
-    int packet_number = (MAX_PACKET_SIZE > length) ? length : MAX_PACKET_SIZE;
+  stuffed_bytes = byte_stuffing(buffer, length, stuffed);
 
-    for (; index < data_bytes + stuffed_index; index++) {
-        if (buffer[index] == FLAG) {
-            stuffed[stuffed_index++] = ESC;
-            stuffed[stuffed_index++] = STUFF_FLAG;
-        } else if (buffer[index] == ESC) {
-            stuffed[stuffed_index++] = ESC;
-            stuffed[stuffed_index++] = STUFF_ESC;
-        } else {
-            stuffed[stuffed_index++] = buffer[index];
-        }
-    }
+  info.bcc = retrieveBcc(buffer, data_bytes, bytes);
 
-    data_bytes = packet_number;
-    stuffed_bytes = stuffed_index;
-    info.bcc = retrieveBcc(buffer, data_bytes, bytes);
+  bytes += data_bytes;
 
-    bytes += data_bytes;
+  if (tryWrite(fd, stuffed, stuffed_bytes) == -1) { return -1; }
 
-    if (tryWrite(fd, stuffed, stuffed_bytes) == -1) { return -1; }
-
-    info.msgNr++;
-
-  } while (bytes < length);
-  
+  info.msgNr++;
 
   return bytes;
 }

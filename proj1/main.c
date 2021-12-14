@@ -71,22 +71,20 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-
-    status = strcmp(argv[1], "TRANSMITTER"); //Sets status to 0 if it's TRANSMITTER, 1 if it's RECEIVER
+    if ((strcmp(argv[1], "TRANSMITTER")) == 0) { //Sets status to 0 if it's TRANSMITTER, 1 if it's RECEIVER
+        status = 0;
+    }
+    else { status = 1; }
+    
     porta = atoi(argv[2]);
-
-    printf("porta is %i \n", porta);
 
     state = OPENING_CONNECTION;
 
-    printf("opening connection \n");
     fd = llopen(porta, status);
 
-    printf("Created connection. \n");
 
     if (status) { //TRANSMITTER
 
-        printf("welcome transmitter");
         int fileFd, fileSize;
         char fileName[256];
         struct stat fileData;
