@@ -4,6 +4,12 @@
 #include "defines.h"
 
 typedef struct {
+  unsigned char addr;
+  unsigned char msgNr;
+  char bcc;
+} message;
+
+typedef struct {
 	unsigned int N_s;
 	unsigned int framesSent;
 	unsigned int framesReceived;
@@ -12,8 +18,9 @@ typedef struct {
 	unsigned int RRreceived;
 	unsigned int RJreceived;
 }l_Control;
-
 extern l_Control lControl;
+
+
 
 extern int cFlag;
 extern int tries;

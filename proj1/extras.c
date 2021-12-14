@@ -1,5 +1,6 @@
 #include "extras.h"   
 
+#include <string.h>
 
 int send_packet(int fd, int A, int C){
     char buf[5];
@@ -16,7 +17,7 @@ int send_packet(int fd, int A, int C){
 }
 
 int receive_packet(int fd, int A, int C){
-    message_state state = START;
+    information_state state = START;
     int bytes;
     while (state != STOP) {
         char buf[1];
@@ -58,33 +59,6 @@ int receive_packet(int fd, int A, int C){
     return bytes;
 }
 
-information_state trama_check(information_state state, char byte, int C) {
-    switch (state) {
-    case START_I:
-        if (byte == FLAG_RCV_I) { state = FLAG_RCV; }
-        break;
-    case FLAG_RCV_I:
-        if (byte == TRANSMITTER_A) { state = A_RCV_I; }
-        else if (byte == FLAG) { state = FLAG_RCV_I; }
-        else { state = START_I; }
-        break;
-    case A_RCV_I:
-        if (byte == C_S(0)) { state = C_RCV_I; }
-        else if (byte == FLAG) { state = FLAG_RCV_I; }
-        else { state = START_I; }
-        break;
-    case BCC1_OK:
-        break;
-    case DATA:
-        break;
-    case STOP_I:
-        break;
-    default:
-        exit(1);
-        break;
-    }
-    return state;
-}
 
 int send_set(int fd) {
     return send_packet(fd, TRANSMITTER_A, SET);
@@ -140,4 +114,27 @@ int receive_rej0(int fd){
 
 int receive_rej1(int fd){
     return receive_packet(fd, RECEIVER_A, C_REJ1);
+}
+
+int byte_stuffing(unsigned char* packet, int size, unsigned char** frame){
+  *frame = (unsigned char*) malloc(size * 2);
+  int new_size = 0;
+  for(int i = 0, j = 0; i < size; i++,j++)
+  {
+    if(packet[i] == FLAG){
+      (*frame)[j] = ESC;
+      j++;
+      (*frame)[j] = 0x5E;
+    }
+    else if (packet[i] == ESC){
+      (*frame)[j] = ESC;
+      j++;
+      (*frame)[j] = 0x5D;
+    }
+    else{
+      (*frame)[j] = packet[i];
+    }
+    new_size++;
+  }
+  return new_size;
 }
