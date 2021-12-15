@@ -61,18 +61,12 @@ int llopen(int porta, int status) {
   }
 
   if (status == 0) {
-    printf("Before send SET \n");
     send_packet(fd, TRANSMITTER_A, SET);
-    printf("After send SET \n");
     receive_packet(fd);
-    printf("After receive UA \n");
   }
   else {
-    printf("Before receive SET \n");
     receive_packet(fd);
-    printf("After receive SET \n");
     send_packet(fd, RECEIVER_A, UA);
-    printf("After send UA \n");
   }
 
   printf("New termios structure set\n");

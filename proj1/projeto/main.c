@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "ll.h"
 #include "macros.h"
@@ -11,6 +13,7 @@ static int plot_counter = 0;
 
 int main(int argc, char **argv) {
     int porta, status, fd;
+    
 
     if (!(argc == 4 && (strcmp(argv[1], "TRANSMITTER") == 0)) &&
         !(argc == 3 && (strcmp(argv[1], "RECEIVER") == 0))) {
@@ -27,27 +30,57 @@ int main(int argc, char **argv) {
 
     fd = llopen(porta, status);
 
+    char fileName[256] = "penguin.jpg";
+    int fileSize, fileFd;
+    struct stat stats;
+
+    fileFd = open(fileName, O_RDONLY);
+    stat(fileName, &stats);
+    fileSize = stats.st_size;
+
     if (status == 0) {
-        unsigned char buffer[5] = "nigga";
-        unsigned char* information_plot = create_information_plot(C_S(plot_counter), buffer, 5);
-        write(fd, information_plot, 11);
-        // for (int i = 0; i < 11; i++) {
-        //     printf("byte %i is %u\n", i, information_plot[i]);
-        // }
-    }
-    else {
-        sleep(1);
-        unsigned char buffer[21];
-        int res = 0;
-        res = read(fd, buffer, 21);
-        buffer[res] = 0;
-        // read(fd, buffer2, 11);
+        // char fileName[256];
+        // fileName = argv[3];
+        // int fileSize, fileFd;
+        // struct stat stats;
+
+        // fileFd = open(fileName, O_RDONLY);
+        // stat(fileName, &stats);
+        // fileSize = stats.st_size;
+
+        unsigned char fileData [fileSize];
+
+        read(fileFd, &fileData, fileSize);
+
+        for (int i = 0; i < 30; i++) {
+            printf("%u", fileData[i]);
+        }
         
 
-        // for (int i = 0; i < 21; i++) {
-        //     printf("byte %i is %u\n", i, buffer[i]);
-        // }
+        write(fd, fileData, fileSize);
+
+        // unsigned char* information_plot = create_information_plot(C_S(plot_counter), fileData, fileSize);
+
+        // write(fd, information_plot, fileSize + 6);
     }
+    else {
+        sleep(20);
+
+        unsigned char fileData [fileSize];
+
+        read(fd, &fileData, fileSize);
+
+        int newFileFd = open("new_penguin.jpg",O_WRONLY |O_APPEND|O_CREAT|O_TRUNC,0750);
+        
+        for (int i = 0; i < 30; i++) {
+            printf("%u", fileData[i]);
+        }
+
+        write(newFileFd, fileData, fileSize);
+    
+    }
+
+    close(fileFd);
 
     printf("Closing serial port.\n");
 
