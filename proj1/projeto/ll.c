@@ -74,40 +74,27 @@ int llopen(int porta, int status) {
     send_packet(fd, RECEIVER_A, UA);
     printf("After send UA \n");
   }
-    
-
-
-//   if (status == 0) { //TRANSMITTER
-//     do
-//     {
-//       send_set(fd);
-//       setAlarm(TIMEOUT);
-//       cFlag = 0;
-//       receive_ua(fd);
-//       cancelAlarm();  
-//       printf("cflag is %i and tries is %i\n", cFlag, tries);
-//     } while (cFlag && tries <= MAX_TRIES);
-//     if (tries >= MAX_TRIES) return -1;
-//     else tries = 1; 
-//     cancelAlarm();
-
-
-//   }
-//   else { //RECEIVER
-//     do
-//     {
-//       receive_set(fd);
-//       setAlarm(TIMEOUT);
-//       cFlag = 0;
-//       send_ua(fd);
-//       cancelAlarm();  
-//     } while (cFlag && tries <= MAX_TRIES);
-//     if (tries >= MAX_TRIES) return -1;
-//     else tries = 1; 
-//     cancelAlarm();
-//   }
 
   printf("New termios structure set\n");
 
   return fd; // link layer identifier
 }
+
+// int llclose(int fd, int status) {
+//   if (!(status)) { //Transmitter
+//     printf("Closing connection.\n");
+//     send_disc(fd);
+//     receive_ua(fd);
+//   }
+//   else { //Receiver
+//     receive_disc(fd);
+//     send_ua(fd);
+//     sleep(2);
+//     if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
+//       perror("tcsetattr");
+//       return FALSE;
+//     }
+//   }
+//   close(fd); 
+//   return 0; //sucess
+// }

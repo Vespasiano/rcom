@@ -22,8 +22,8 @@ unsigned char* create_information_plot(char ctrl, unsigned char * buffer, int le
     printf("bcc2 is %u\n", BCC2);
     
 
-    buffer[4 + length] = BCC2;
-    buffer[5 + length] = FLAG; 
+    information_plot[4 + length] = BCC2;
+    information_plot[5 + length] = FLAG; 
 
     return information_plot;
 }

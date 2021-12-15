@@ -28,22 +28,25 @@ int main(int argc, char **argv) {
     fd = llopen(porta, status);
 
     if (status == 0) {
-        unsigned char buffer[5] = "bruh";
+        unsigned char buffer[5] = "nigga";
         unsigned char* information_plot = create_information_plot(C_S(plot_counter), buffer, 5);
-        write(fd, "nigga", 5);
-        printf("information plot is %s\n", information_plot);
-        for (int i = 0; i < strlen( (char *) information_plot); i++) {
-            printf("char number %i is %u\n", i, information_plot[i]);
-        }
-        
-        // write(fd, information_plot, 11);
+        write(fd, information_plot, 11);
+        // for (int i = 0; i < 11; i++) {
+        //     printf("byte %i is %u\n", i, information_plot[i]);
+        // }
     }
     else {
-        
-        unsigned char buffer2[5];
+        sleep(1);
+        unsigned char buffer[21];
+        int res = 0;
+        res = read(fd, buffer, 21);
+        buffer[res] = 0;
         // read(fd, buffer2, 11);
-        read(fd, buffer2, 5);
-        printf("buffer2 is %s\n", buffer2);
+        
+
+        // for (int i = 0; i < 21; i++) {
+        //     printf("byte %i is %u\n", i, buffer[i]);
+        // }
     }
 
     printf("Closing serial port.\n");

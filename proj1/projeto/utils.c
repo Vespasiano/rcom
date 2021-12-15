@@ -10,7 +10,6 @@
 state_machine stateM;
 
 int send_packet(int fd, int A, int C){
-    printf("sending packet\n");
     char buf[5];
     int bytes;
     buf[0] = FLAG;
@@ -20,24 +19,43 @@ int send_packet(int fd, int A, int C){
     buf[4] = FLAG;
 
     bytes = write(fd, buf, 5);
-    printf("%d bytes written\n", bytes);
+    printf("\n sending packet \n");
+    for (int i = 0; i < 5; i++) {
+      printf("byte %i is %u\n", i, buf[i]);
+    }
+    
+    // printf("%d bytes written\n", bytes);
     return bytes;
 }
 
 int receive_packet(int fd) {
     int stop = FALSE;
     int bytes_read = 0;
+    stateM.state = START;
     while(!stop) {
         unsigned char byte[1];
         
-        if (read(fd, byte[0], 1) == -1) { break; }
+        if (read(fd, byte[0], 1) == -1) { 
+          printf("xd tchenganei\n");
+          break; 
+        }
         
+        if (byte[0] != 0) {
+          printf("byte %i is %u\n", bytes_read, byte[0]);
+        }
+
         bytes_read++;
 
         stateMachine(byte[0]);
 
-        if (stateM.state == S_MSG_RCV) { stop = TRUE; }
+        if (stateM.state == S_MSG_RCV) { 
+          printf("stop true");
+          stop = TRUE; 
+        }
     }
+
+    printf("received packet xx \n");
+
     return bytes_read;
 }
 
@@ -47,6 +65,7 @@ void stateMachine(unsigned char byte) {
     if (byte == FLAG) { stateM.state = FLAG_RCV; }
     break;
   case FLAG_RCV:
+    printf("flagrcv\n");
     if (byte == FLAG) { break;}
     else if ((byte == TRANSMITTER_A) || (byte == RECEIVER_A)) {
       stateM.state = A_RCV;
@@ -55,6 +74,7 @@ void stateMachine(unsigned char byte) {
     else { stateM.state = START; }
     break;
   case A_RCV:
+    printf("arcv\n");
     switch (byte) {
         case FLAG:
             stateM.state = FLAG_RCV;
@@ -79,6 +99,7 @@ void stateMachine(unsigned char byte) {
     }
     break;
   case C_RCV:
+    printf("crcv\n");
     if (byte == FLAG) { stateM.state = FLAG_RCV; }
     else if (byte == BCC(stateM.addr, stateM.ctrl)) { stateM.state = BCC_OK; }
     else { stateM.state = START; }
