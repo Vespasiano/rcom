@@ -74,21 +74,22 @@ int llopen(int porta, int status) {
   return fd; // link layer identifier
 }
 
-// int llclose(int fd, int status) {
-//   if (!(status)) { //Transmitter
-//     printf("Closing connection.\n");
-//     send_disc(fd);
-//     receive_ua(fd);
-//   }
-//   else { //Receiver
-//     receive_disc(fd);
-//     send_ua(fd);
-//     sleep(2);
-//     if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
-//       perror("tcsetattr");
-//       return FALSE;
-//     }
-//   }
-//   close(fd); 
-//   return 0; //sucess
-// }
+int llclose(int fd, int status) {
+  if (status == 0) { //Transmitter
+    printf("Closing connection [TRANSMITTER].\n");
+    send_packet(fd, TRANSMITTER_A, DISC);
+    receive_packet(fd);
+  }
+  else { //Receiver
+    printf("Closing connection [RECEIVER].\n");
+    receive_packet(fd);
+    send_packet(fd, RECEIVER_A, UA);
+    sleep(2);
+    if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
+      perror("tcsetattr");
+      return FALSE;
+    }
+  }
+  close(fd); 
+  return 0; //sucess
+}

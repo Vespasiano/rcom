@@ -30,61 +30,29 @@ int main(int argc, char **argv) {
 
     fd = llopen(porta, status);
 
-    char fileName[256] = "penguin.jpg";
-    int fileSize, fileFd;
-    struct stat stats;
-
-    fileFd = open(fileName, O_RDONLY);
-    stat(fileName, &stats);
-    fileSize = stats.st_size;
-
     if (status == 0) {
-        // char fileName[256];
-        // fileName = argv[3];
-        // int fileSize, fileFd;
-        // struct stat stats;
+        unsigned char* fileData = "aaaaa";
 
-        // fileFd = open(fileName, O_RDONLY);
-        // stat(fileName, &stats);
-        // fileSize = stats.st_size;
+        unsigned char* information_plot = create_information_plot(C_S(plot_counter), fileData, 5);
+        for(int i = 0; i < 11; i++)
+            printf("%u\n",information_plot[i]);
 
-        unsigned char fileData [fileSize];
-
-        read(fileFd, &fileData, fileSize);
-
-        for (int i = 0; i < 30; i++) {
-            printf("%u", fileData[i]);
-        }
-        
-
-        write(fd, fileData, fileSize);
-
-        // unsigned char* information_plot = create_information_plot(C_S(plot_counter), fileData, fileSize);
-
-        // write(fd, information_plot, fileSize + 6);
+        write(fd, information_plot, 5 + 6);
     }
     else {
-        sleep(20);
 
-        unsigned char fileData [fileSize];
-
-        read(fd, &fileData, fileSize);
-
-        int newFileFd = open("new_penguin.jpg",O_WRONLY |O_APPEND|O_CREAT|O_TRUNC,0750);
+        char buff[1];
         
-        for (int i = 0; i < 30; i++) {
-            printf("%u", fileData[i]);
+        for (int i = 0; i < 11; i++) {
+            read(fd,&buff[0],1);
+            printf("%u\n", buff[0]);
         }
-
-        write(newFileFd, fileData, fileSize);
     
     }
 
-    close(fileFd);
-
     printf("Closing serial port.\n");
 
-    close(fd);
+    llclose(fd,status);
 
     return 0;
 }
